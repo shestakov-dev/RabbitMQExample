@@ -1,0 +1,20 @@
+{
+  "name": "rabbitmq-example",
+  "version": "1.0.0",
+  "description": "RabbitMQ example with Node.js publisher and consumer",
+  "main": "index.js",
+  "scripts": {
+    "publisher": "node publisher.js",
+    "consumer": "node consumer.js"
+  },
+  "keywords": [
+    "rabbitmq",
+    "nodejs",
+    "docker"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "amqplib": "^0.10.3"
+  }
+}
