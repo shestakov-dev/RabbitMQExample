@@ -1,7 +1,7 @@
 {
   "name": "rabbitmq-example",
   "version": "1.0.0",
-  "description": "RabbitMQ example with Node.js publisher and consumer",
+  "description": "RabbitMQ example with FastAPI publisher, Python consumer, and legacy Node.js examples",
   "main": "index.js",
   "scripts": {
     "publisher": "node publisher.js",
@@ -10,6 +10,8 @@
   "keywords": [
     "rabbitmq",
     "nodejs",
+    "python",
+    "fastapi",
     "docker"
   ],
   "author": "",

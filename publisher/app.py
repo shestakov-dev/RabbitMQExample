@@ -56,9 +56,10 @@ def root():
 @app.post("/orders")
 def publish_order(order: Order):
     """Publish order to RabbitMQ queue"""
+    connection = None
     try:
         # Add timestamp to order
-        order_data = order.dict()
+        order_data = order.model_dump()
         order_data['timestamp'] = datetime.now().isoformat()
         
         # Connect to RabbitMQ
@@ -82,9 +83,6 @@ def publish_order(order: Order):
         
         logger.info(f"Published order: {order_data['order_id']}")
         
-        # Close connection
-        connection.close()
-        
         return {
             "status": "success",
             "message": "Order published successfully",
@@ -94,14 +92,21 @@ def publish_order(order: Order):
     except Exception as e:
         logger.error(f"Error publishing order: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to publish order: {str(e)}")
+    finally:
+        # Ensure connection is closed
+        if connection and not connection.is_closed:
+            connection.close()
 
 
 @app.get("/health")
 def health_check():
     """Check if service can connect to RabbitMQ"""
+    connection = None
     try:
         connection = get_rabbitmq_connection()
-        connection.close()
         return {"status": "healthy", "rabbitmq": "connected"}
     except Exception as e:
         return {"status": "unhealthy", "rabbitmq": "disconnected", "error": str(e)}
+    finally:
+        if connection and not connection.is_closed:
+            connection.close()
