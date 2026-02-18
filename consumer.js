@@ -2,6 +2,7 @@ const amqp = require('amqplib');
 
 const QUEUE_NAME = 'example_queue';
 const RABBITMQ_URL = 'amqp://guest:guest@localhost:5672';
+const TIMESTAMP_PATTERN = /\[(.*?)\]/; // Matches timestamp in format [YYYY-MM-DDTHH:mm:ss.sssZ]
 
 async function consumeMessages() {
   try {
@@ -38,9 +39,9 @@ function processMessage(message) {
   console.log(`  → Processing message...`);
   
   // Extract timestamp and content
-  const timestampMatch = message.match(/\[(.*?)\]/);
+  const timestampMatch = message.match(TIMESTAMP_PATTERN);
   const timestamp = timestampMatch ? timestampMatch[1] : 'Unknown time';
-  const content = message.replace(/\[.*?\]\s*/, '');
+  const content = message.replace(TIMESTAMP_PATTERN, '').trim();
   
   console.log(`  → Timestamp: ${timestamp}`);
   console.log(`  → Content: ${content}`);

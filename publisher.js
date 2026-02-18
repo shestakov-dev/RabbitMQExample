@@ -2,6 +2,8 @@ const amqp = require('amqplib');
 
 const QUEUE_NAME = 'example_queue';
 const RABBITMQ_URL = 'amqp://guest:guest@localhost:5672';
+const MESSAGE_DELAY_MS = 500; // Delay between publishing messages
+const GRACEFUL_SHUTDOWN_DELAY_MS = 1000; // Wait for messages to flush before closing
 
 // Sample messages to publish
 const sampleMessages = [
@@ -35,7 +37,7 @@ async function publishMessages() {
       console.log(`✓ Published: ${message}`);
       
       // Small delay between messages
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, MESSAGE_DELAY_MS));
     }
 
     console.log(`\n${numberOfMessages} messages published successfully!`);
@@ -44,7 +46,7 @@ async function publishMessages() {
     setTimeout(() => {
       connection.close();
       process.exit(0);
-    }, 1000);
+    }, GRACEFUL_SHUTDOWN_DELAY_MS);
 
   } catch (error) {
     console.error('Error publishing messages:', error.message);
