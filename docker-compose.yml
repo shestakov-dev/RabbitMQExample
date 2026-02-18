@@ -15,3 +15,35 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - rabbitmq_network
+
+  publisher:
+    build: ./publisher
+    container_name: publisher
+    ports:
+      - "8000:8000"
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - rabbitmq_network
+
+  consumer:
+    build: ./consumer
+    container_name: consumer
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+    volumes:
+      - ./data:/data
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - rabbitmq_network
+
+networks:
+  rabbitmq_network:
+    driver: bridge
