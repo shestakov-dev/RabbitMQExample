@@ -1,7 +1,8 @@
 const amqp = require('amqplib');
 
 const QUEUE_NAME = 'example_queue';
-const RABBITMQ_URL = 'amqp://guest:guest@localhost:5672';
+const RABBITMQ_HOST = process.env.RABBITMQ_HOST || 'localhost';
+const RABBITMQ_URL = `amqp://guest:guest@${RABBITMQ_HOST}:5672`;
 const MESSAGE_DELAY_MS = 500; // Delay between publishing messages
 const GRACEFUL_SHUTDOWN_DELAY_MS = 1000; // Wait for messages to flush before closing
 
@@ -19,7 +20,7 @@ const sampleMessages = [
 
 async function publishMessages() {
   try {
-    console.log('Connecting to RabbitMQ...');
+    console.log(`Connecting to RabbitMQ at ${RABBITMQ_URL}...`);
     const connection = await amqp.connect(RABBITMQ_URL);
     const channel = await connection.createChannel();
 

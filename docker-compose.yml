@@ -19,10 +19,10 @@ services:
       - rabbitmq_network
 
   publisher:
-    build: ./publisher
+    build:
+      context: .
+      dockerfile: Dockerfile.publisher
     container_name: publisher
-    ports:
-      - "8000:8000"
     environment:
       - RABBITMQ_HOST=rabbitmq
     depends_on:
@@ -30,14 +30,15 @@ services:
         condition: service_healthy
     networks:
       - rabbitmq_network
+    restart: "no"
 
   consumer:
-    build: ./consumer
+    build:
+      context: .
+      dockerfile: Dockerfile.consumer
     container_name: consumer
     environment:
       - RABBITMQ_HOST=rabbitmq
-    volumes:
-      - ./data:/data
     depends_on:
       rabbitmq:
         condition: service_healthy

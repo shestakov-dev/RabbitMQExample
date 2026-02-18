@@ -1,12 +1,13 @@
 const amqp = require('amqplib');
 
 const QUEUE_NAME = 'example_queue';
-const RABBITMQ_URL = 'amqp://guest:guest@localhost:5672';
+const RABBITMQ_HOST = process.env.RABBITMQ_HOST || 'localhost';
+const RABBITMQ_URL = `amqp://guest:guest@${RABBITMQ_HOST}:5672`;
 const TIMESTAMP_PATTERN = /\[(.*?)\]/; // Matches timestamp in format [YYYY-MM-DDTHH:mm:ss.sssZ]
 
 async function consumeMessages() {
   try {
-    console.log('Connecting to RabbitMQ...');
+    console.log(`Connecting to RabbitMQ at ${RABBITMQ_URL}...`);
     const connection = await amqp.connect(RABBITMQ_URL);
     const channel = await connection.createChannel();
 

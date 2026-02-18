@@ -1,23 +1,21 @@
 # RabbitMQExample
 
-A complete RabbitMQ example demonstrating message queue communication between a FastAPI publisher and a Python consumer using Docker Compose.
+A simple RabbitMQ example with Node.js publisher and consumer using Docker Compose.
 
 ## Overview
 
-This project demonstrates a microservices architecture with:
-- **Publisher** - FastAPI application with REST API endpoint (`/orders`) that publishes JSON messages to RabbitMQ
-- **RabbitMQ** - Message broker for reliable message delivery
-- **Consumer** - Python application that consumes messages, saves them to a file, and generates log messages
+This project demonstrates a basic message queue system using:
+- **RabbitMQ** - Message broker running in Docker
+- **Publisher** - Node.js application that publishes random messages
+- **Consumer** - Node.js application that consumes and processes messages
 
 ## Architecture
 
 ```
-┌─────────────┐         ┌──────────┐         ┌──────────┐
-│  Publisher  │         │ RabbitMQ │         │ Consumer │
-│  (FastAPI)  │ ──────> │ (Docker) │ ──────> │ (Python) │
-│   :8000     │  JSON   │  :5672   │  JSON   │  Logs +  │
-│             │         │ :15672   │         │   File   │
-└─────────────┘         └──────────┘         └──────────┘
+┌──────────┐         ┌──────────┐         ┌──────────┐
+│Publisher │ ──────> │ RabbitMQ │ ──────> │Consumer  │
+│ (Node.js)│         │ (Docker) │         │ (Node.js)│
+└──────────┘         └──────────┘         └──────────┘
 ```
 
 ## Prerequisites
@@ -25,188 +23,44 @@ This project demonstrates a microservices architecture with:
 - [Docker](https://docs.docker.com/get-docker/) 
 - [Docker Compose](https://docs.docker.com/compose/install/)
 
-## Installation & Usage
+For local development without Docker:
+- [Node.js](https://nodejs.org/) (v14 or higher)
+- npm (comes with Node.js)
+
+## Quick Start with Docker Compose
 
 ### 1. Start All Services
 
-Start all services (RabbitMQ, Publisher, Consumer) with Docker Compose:
+Start RabbitMQ, publisher, and consumer with a single command:
 
 ```bash
 docker compose up --build
 ```
 
 This will:
-- Build the publisher and consumer Docker images
 - Start RabbitMQ with management UI
-- Start the publisher API on `http://localhost:8000`
-- Start the consumer listening for messages
+- Build and run the publisher (publishes messages and exits)
+- Build and run the consumer (keeps running and processing messages)
 
-### 2. Publish Orders
+The consumer will display processed messages in the terminal.
 
-Send orders to the publisher API using the `/orders` endpoint:
+### 2. View RabbitMQ Management UI
 
-**Example using curl:**
-
-```bash
-curl -X POST http://localhost:8000/orders \
-  -H "Content-Type: application/json" \
-  -d '{
-    "order_id": "ORD-001",
-    "customer_name": "John Doe",
-    "product": "Laptop",
-    "quantity": 2,
-    "price": 1299.99
-  }'
-```
-
-**Example using Python:**
-
-```python
-import requests
-
-order = {
-    "order_id": "ORD-002",
-    "customer_name": "Jane Smith",
-    "product": "Mouse",
-    "quantity": 5,
-    "price": 29.99
-}
-
-response = requests.post("http://localhost:8000/orders", json=order)
-print(response.json())
-```
-
-**Interactive API Documentation:**
-
-Open `http://localhost:8000/docs` in your browser for interactive Swagger UI.
-
-### 3. View Consumer Logs
-
-The consumer will log each received order. View the logs:
-
-```bash
-docker compose logs -f consumer
-```
-
-Example output:
-```
-============================================================
-✓ Received new order
-  Order ID: ORD-001
-  Customer: John Doe
-  Product: Laptop
-  Quantity: 2
-  Price: $1299.99
-  Timestamp: 2026-02-18T08:30:00.123456
-✓ Saved order to file: ORD-001
-  Total orders in file: 1
-✓ Order processed successfully
-============================================================
-```
-
-### 4. View Saved Orders
-
-All orders are saved to `./data/orders.json`:
-
-```bash
-cat data/orders.json
-```
-
-### 5. Access RabbitMQ Management UI
-
-Open `http://localhost:15672` in your browser:
+Open your browser and navigate to: `http://localhost:15672`
 - Username: `guest`
 - Password: `guest`
 
-View queues, messages, connections, and more.
+Here you can view queues, messages, connections, and more.
 
-## Project Structure
+### 3. Run Publisher Again
 
-```
-RabbitMQExample/
-├── docker-compose.yml          # Orchestrates all services
-├── publisher/
-│   ├── Dockerfile             # Publisher container image
-│   ├── app.py                 # FastAPI application
-│   └── requirements.txt       # Python dependencies
-├── consumer/
-│   ├── Dockerfile             # Consumer container image
-│   ├── app.py                 # Consumer application
-│   └── requirements.txt       # Python dependencies
-├── data/
-│   └── orders.json            # Saved orders (auto-generated)
-└── README.md                  # This file
-```
-
-## API Endpoints
-
-### Publisher Service (Port 8000)
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/` | Health check |
-| POST | `/orders` | Publish order to queue |
-| GET | `/health` | Check RabbitMQ connection |
-| GET | `/docs` | Interactive API documentation |
-
-### Order Schema
-
-```json
-{
-  "order_id": "string",
-  "customer_name": "string",
-  "product": "string",
-  "quantity": integer,
-  "price": float
-}
-```
-
-## How It Works
-
-### 1. Publisher (FastAPI)
-- Exposes REST API endpoint `/orders`
-- Receives order data in JSON format
-- Adds timestamp to each order
-- Publishes message to RabbitMQ queue `orders_queue`
-- Returns confirmation to client
-
-### 2. RabbitMQ
-- Message broker that queues messages
-- Ensures reliable delivery (persistent messages)
-- Provides management UI for monitoring
-- Handles connection from both publisher and consumer
-
-### 3. Consumer
-- Connects to RabbitMQ on startup
-- Listens continuously for messages on `orders_queue`
-- Processes each message:
-  - Parses JSON data
-  - Logs order details
-  - Saves to file (`/data/orders.json`)
-  - Acknowledges message
-- Automatic reconnection on failure
-
-## Testing Multiple Orders
-
-You can use this bash script to publish multiple orders:
+To publish more messages:
 
 ```bash
-#!/bin/bash
-for i in {1..5}; do
-  curl -X POST http://localhost:8000/orders \
-    -H "Content-Type: application/json" \
-    -d "{
-      \"order_id\": \"ORD-$(printf '%03d' $i)\",
-      \"customer_name\": \"Customer $i\",
-      \"product\": \"Product $i\",
-      \"quantity\": $((RANDOM % 10 + 1)),
-      \"price\": $((RANDOM % 1000 + 100))
-    }"
-  sleep 1
-done
+docker compose run --rm publisher
 ```
 
-## Stopping the Application
+### 4. Stop Services
 
 Stop all services:
 
@@ -214,38 +68,139 @@ Stop all services:
 docker compose down
 ```
 
-Stop and remove volumes:
+## Local Development (Without Docker)
+
+### 1. Install Dependencies
 
 ```bash
-docker compose down -v
+npm install
 ```
+
+### 2. Start RabbitMQ
+
+Start only RabbitMQ using Docker:
+
+```bash
+docker compose up -d rabbitmq
+```
+
+### 3. Run Consumer
+
+In one terminal:
+
+```bash
+npm run consumer
+```
+
+### 4. Run Publisher
+
+In another terminal:
+
+```bash
+npm run publisher
+```
+
+## How It Works
+
+### Publisher (`publisher.js`)
+- Connects to RabbitMQ
+- Randomly publishes 3-7 messages from a predefined list
+- Each message includes a timestamp
+- Exits after publishing all messages
+
+### Consumer (`consumer.js`)
+- Connects to RabbitMQ
+- Listens continuously for messages
+- Processes each message (extracts timestamp and content)
+- Acknowledges messages after processing
+- Keeps running until manually stopped
+
+### RabbitMQ
+- Message broker that queues messages
+- Ensures reliable message delivery between publisher and consumer
+- Provides management UI for monitoring
+
+## Example Output
+
+**Publisher:**
+```
+=== RabbitMQ Publisher ===
+Connecting to RabbitMQ at amqp://guest:guest@rabbitmq:5672...
+
+Publishing 4 messages to queue 'example_queue'...
+
+✓ Published: [2026-02-18T08:30:00.123Z] Hello from RabbitMQ!
+✓ Published: [2026-02-18T08:30:00.623Z] Processing order #12345
+✓ Published: [2026-02-18T08:30:01.123Z] Payment processed successfully
+✓ Published: [2026-02-18T08:30:01.623Z] Email notification sent
+
+4 messages published successfully!
+```
+
+**Consumer:**
+```
+=== RabbitMQ Consumer ===
+Connecting to RabbitMQ at amqp://guest:guest@rabbitmq:5672...
+Waiting for messages in queue 'example_queue'...
+To exit, press CTRL+C
+
+✓ Received: [2026-02-18T08:30:00.123Z] Hello from RabbitMQ!
+  → Processing message...
+  → Timestamp: 2026-02-18T08:30:00.123Z
+  → Content: Hello from RabbitMQ!
+  → Processing completed!
+
+✓ Received: [2026-02-18T08:30:00.623Z] Processing order #12345
+  → Processing message...
+  → Timestamp: 2026-02-18T08:30:00.623Z
+  → Content: Processing order #12345
+  → Processing completed!
+```
+
+## Project Structure
+
+```
+RabbitMQExample/
+├── docker-compose.yml       # Docker Compose configuration
+├── Dockerfile.publisher     # Publisher Docker image
+├── Dockerfile.consumer      # Consumer Docker image
+├── package.json            # Node.js dependencies and scripts
+├── publisher.js            # Message publisher application
+├── consumer.js             # Message consumer application
+└── README.md              # This file
+```
+
+## Configuration
+
+Both publisher and consumer use the `RABBITMQ_HOST` environment variable to connect to RabbitMQ:
+- In Docker: automatically set to `rabbitmq` (service name)
+- Locally: defaults to `localhost`
+
+## Technologies Used
+
+- **Node.js 18** - JavaScript runtime
+- **amqplib** - AMQP 0-9-1 client library for Node.js
+- **RabbitMQ 3** - Message broker with management plugin
+- **Docker & Docker Compose** - Containerization and orchestration
 
 ## Troubleshooting
 
-### Publisher can't connect to RabbitMQ
+### Services won't start
 
-Wait a few seconds for RabbitMQ to fully start. The publisher has built-in retry logic.
+Wait a few seconds for RabbitMQ to fully initialize. The publisher and consumer have dependency checks.
 
-### Consumer not receiving messages
-
-1. Check if consumer is running: `docker compose ps`
-2. Check consumer logs: `docker compose logs consumer`
-3. Verify queue exists in RabbitMQ management UI
-
-### View all service logs
+### View all logs
 
 ```bash
 docker compose logs -f
 ```
 
-## Technologies Used
+### View specific service logs
 
-- **Python 3.11** - Programming language
-- **FastAPI** - Modern web framework for building APIs
-- **Pika** - Python client for RabbitMQ (AMQP 0-9-1)
-- **RabbitMQ 3** - Message broker with management plugin
-- **Docker & Docker Compose** - Containerization and orchestration
-- **Uvicorn** - ASGI server for FastAPI
+```bash
+docker compose logs -f consumer
+docker compose logs -f publisher
+```
 
 ## License
 
