@@ -5,6 +5,7 @@ A simple RabbitMQ example with Node.js publisher and consumer using Docker Compo
 ## Overview
 
 This project demonstrates a basic message queue system using:
+
 - **RabbitMQ** - Message broker running in Docker
 - **Publisher** - Node.js application that publishes random messages
 - **Consumer** - Node.js application that consumes and processes messages
@@ -20,10 +21,11 @@ This project demonstrates a basic message queue system using:
 
 ## Prerequisites
 
-- [Docker](https://docs.docker.com/get-docker/) 
+- [Docker](https://docs.docker.com/get-docker/)
 - [Docker Compose](https://docs.docker.com/compose/install/)
 
 For local development without Docker:
+
 - [Node.js](https://nodejs.org/) (v14 or higher)
 - npm (comes with Node.js)
 
@@ -38,6 +40,7 @@ docker compose up --build
 ```
 
 This will:
+
 - Start RabbitMQ with management UI
 - Build and run the publisher (publishes messages and exits)
 - Build and run the consumer (keeps running and processing messages)
@@ -47,6 +50,7 @@ The consumer will display processed messages in the terminal.
 ### 2. View RabbitMQ Management UI
 
 Open your browser and navigate to: `http://localhost:15672`
+
 - Username: `guest`
 - Password: `guest`
 
@@ -103,12 +107,14 @@ npm run publisher
 ## How It Works
 
 ### Publisher (`publisher.js`)
+
 - Connects to RabbitMQ
 - Randomly publishes 3-7 messages from a predefined list
 - Each message includes a timestamp
 - Exits after publishing all messages
 
 ### Consumer (`consumer.js`)
+
 - Connects to RabbitMQ
 - Listens continuously for messages
 - Processes each message (extracts timestamp and content)
@@ -116,6 +122,7 @@ npm run publisher
 - Keeps running until manually stopped
 
 ### RabbitMQ
+
 - Message broker that queues messages
 - Ensures reliable message delivery between publisher and consumer
 - Provides management UI for monitoring
@@ -123,6 +130,7 @@ npm run publisher
 ## Example Output
 
 **Publisher:**
+
 ```
 === RabbitMQ Publisher ===
 Connecting to RabbitMQ at amqp://guest:guest@rabbitmq:5672...
@@ -138,6 +146,7 @@ Publishing 4 messages to queue 'example_queue'...
 ```
 
 **Consumer:**
+
 ```
 === RabbitMQ Consumer ===
 Connecting to RabbitMQ at amqp://guest:guest@rabbitmq:5672...
@@ -173,6 +182,7 @@ RabbitMQExample/
 ## Configuration
 
 Both publisher and consumer use the `RABBITMQ_HOST` environment variable to connect to RabbitMQ:
+
 - In Docker: automatically set to `rabbitmq` (service name)
 - Locally: defaults to `localhost`
 
